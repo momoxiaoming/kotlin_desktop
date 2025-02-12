@@ -16,7 +16,7 @@ import java.io.File
 object DexSoManager {
     data class DexConfigData(val list: List<DexVerData>, val sourceType: List<String>)
 
-    data class DexVerData(val name: String, val version: String)
+    data class DexVerData(val name: String, val version: String,val isAdObs:Boolean)
 
     val APP_OUTPUT_PATH by lazy {
         val userDir = System.getProperty("user.dir")
@@ -39,7 +39,9 @@ object DexSoManager {
         list.forEach {
             val name = it.jsonObject.get("name")?.jsonPrimitive?.content!!
             val version = it.jsonObject.get("version")?.jsonPrimitive?.content!!
-            val data = DexVerData(name, version)
+            val isAdObs = it.jsonObject.get("isAdObs")?.jsonPrimitive?.content!!.toBoolean()
+
+            val data = DexVerData(name,version, isAdObs)
             dataList.add(data)
         }
         println(dataList)
@@ -58,7 +60,12 @@ object DexSoManager {
         }else{
             0
         }
-        val cmd="python $buildPyPath ${dexVer.version} $singleId ${type} $ver102"
+        val isAdObs=if(dexVer.isAdObs){
+            1
+        }else{
+            0
+        }
+        val cmd="python $buildPyPath ${dexVer.version} $singleId ${type} $ver102 $isAdObs"
         println("cmd ->:$cmd")
         ToolsManager.openCmdWindow(cmd)
     }
