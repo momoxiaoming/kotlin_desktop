@@ -1,31 +1,25 @@
 {
   "dexList": [
-  {
-      "name": "104_2版本",
-      "version": "2.0.0.104.2.250212.2",
-      "isAdObs": "true"
-    },
-     {
-      "name": "104版本-热力",
-      "version": "2.0.0.104.1.250210.1",
-       "isAdObs": "false"
+    {
+      "name": "104_3_bidding3_pangle",
+      "version": "2.1043.6.250603.1",
+      "isAdObs": "true",
+      "isNewBh": "false"
     },
     {
-      "name": "104版本",
-      "version": "2.0.0.104.1.250122.3",
-      "isAdObs": "false"
-    },
-    {
-      "name": "103版本",
-      "version": "2.0.0.103.2.250103.4",
-      "isAdObs": "false"
-    },
-
-    {
-      "name": "102版本",
-      "version": "2.0.0.102.241218.2",
-      "isAdObs": "false"
+      "name": "104_3_bidding3_pangle2",
+      "version": "2.1043.7.250619.3",
+      "isAdObs": "false",
+      "isNewBh": "false"
+    },{
+      "name": "104_3_bidding3_pangle_obs",
+      "version": "2.1043.8.250619.1",
+      "isAdObs": "true",
+      "isNewBh": "true"
     }
   ],
-  "sourceType": ["1","0"]
+  "sourceType": [
+    "1",
+    "0"
+  ]
 }

@@ -1,3 +1,4 @@
+import mapping.ConfigInfo
 import kotlinx.serialization.encodeToString
 import java.io.File
 
@@ -9,12 +10,10 @@ import mapping.MappingManager
 import mapping.MappingManager.get
 import utils.AesUtils
 import java.io.BufferedReader
-import java.io.BufferedWriter
 import java.io.InputStreamReader
-import java.io.OutputStreamWriter
 
 /**
- * ToolsManager
+ * ..ToolsManager
  *
  * @author mmxm
  * @date 2024/7/11 10:42
@@ -103,7 +102,9 @@ object ToolsManager {
 
     fun getFuckDoorState(): Boolean {
         val ret = CmdUtils.execCmdSilent("adb shell getprop debug.privacy").replace("\r\n", "")
-        return ret == "fuck_door_888"
+        val ret2 = CmdUtils.execCmdSilent("adb shell getprop debug.gg").replace("\r\n", "")
+
+        return ret == "fuck_door_888" && ret2=="gg_body_123"
     }
 
     fun getBhState(): Boolean {
@@ -145,10 +146,11 @@ object ToolsManager {
      * @return String
      */
     fun encodeContent(orderId: String, content: String):String{
-        val appid_cha = getWbAppIdAndCha(orderId)
-        val appId = appid_cha?.first
-        val cha = appid_cha?.second
-        if (appId.isNullOrEmpty() || cha.isNullOrEmpty()) {
+        val info = getWbAppIdAndCha(orderId)
+        val appId = info?.appid
+        val cha = info?.chan
+        val pid = info?.pid
+        if (appId.isNullOrEmpty() || cha.isNullOrEmpty() || pid.isNullOrEmpty() ) {
             return "需求单数据请求失败"
         }
         val map = MappingManager.getAllMapWord(appId)
@@ -163,7 +165,8 @@ object ToolsManager {
         if(encode_content.isNullOrEmpty()){
             return "加密出错!"
         }
-        result.append("firebase Key: ${getFirebaseKey(map)}")
+        result.append("\nfirebase Key(老板本走appid): ${getFirebaseKey(map)}")
+        result.append("\nfirebase Key(新版本走项目id): ${getFirebaseKey2(pid)}")
         result.append("\nAES加密秘钥: ${key}")
         result.append("\n解映射结果: \n$mapping_content")
         result.append("\n加密结果: \n$encode_content")
@@ -172,10 +175,11 @@ object ToolsManager {
 
 
     fun decodeContent(orderId: String, content: String): String {
-        val appid_cha = getWbAppIdAndCha(orderId)
-        val appId = appid_cha?.first
-        val cha = appid_cha?.second
-        if (appId.isNullOrEmpty() || cha.isNullOrEmpty()) {
+        val info = getWbAppIdAndCha(orderId)
+        val appId = info?.appid
+        val cha = info?.chan
+        val pid = info?.pid
+        if (appId.isNullOrEmpty() || cha.isNullOrEmpty() || pid.isNullOrEmpty() ) {
             return "需求单数据请求失败"
         }
         try {
@@ -183,7 +187,8 @@ object ToolsManager {
 
             val result = StringBuilder()
             val key = AesUtils.getAesKey(appId, cha)
-            result.append("firebase Key: ${getFirebaseKey(map)}")
+            result.append("\nfirebase Key(老板本走appid): ${getFirebaseKey(map)}")
+            result.append("\nfirebase Key(1043走项目id): ${getFirebaseKey2(pid)}")
             result.append("\n参数原始结果:\n${content}")
             //解密
             val decode_content = AesUtils.decrypt(content, key, key)
@@ -223,13 +228,14 @@ object ToolsManager {
      * @param orderId String
      * @return Pair<String?, String?>?
      */
-    fun getWbAppIdAndCha(orderId: String): Pair<String?, String?>? {
+    fun getWbAppIdAndCha(orderId: String): ConfigInfo? {
         try {
             val res = get("http://dnsdk.vimedia.cn:8090/v5/FromConfigInfo?singleid=$orderId")
             val data = Json.parseToJsonElement(res).jsonObject.get("data")!!.jsonObject
             val appId = data.get("appid")?.jsonPrimitive?.content
             val cha = data.get("channelTag")?.jsonPrimitive?.content
-            return Pair(appId, cha)
+            val app_num = data.get("app_num")?.jsonPrimitive?.content
+            return ConfigInfo(appId!!, cha!!, app_num!!)
         } catch (e: Exception) {
             return null
         }
@@ -238,7 +244,7 @@ object ToolsManager {
      * 获取旧中台自定义参数
      * @param orderId String
      */
-    fun getWbToolParamsData(orderId: String):String{
+    fun getWbToolParamsData(orderId: String,):String{
         try {
             val res = get("http://dnsdk.vimedia.cn:8090/v5/FromConfigInfo?singleid=$orderId")
             val data = Json.parseToJsonElement(res).jsonObject.get("data")!!.jsonObject
@@ -303,7 +309,8 @@ object ToolsManager {
                 val dcode_params = getMappingData(params_data, map)
                 println("自定义参数解密结果->${dcode_params.toString()}")
                 val key = AesUtils.getAesKey(appId, cha)
-                result.append("firebase Key: ${getFirebaseKey(map)}")
+                result.append("\nfirebase Key(老板本走appid): ${getFirebaseKey(map)}")
+                result.append("\nfirebase Key(1043走项目id): ${getFirebaseKey2(app_num)}")
                 result.append("\nAES加密秘钥: ${key}")
                 result.append("\n参数原始结果:\n${dcode_params?.toString()?:"原始结果解析出错,请检查服务器返回和appid是否对应"}")
                 result.append("\n参数映射结果:\n${params_data.toString()}")
@@ -370,13 +377,15 @@ object ToolsManager {
                 val dcode_params = getMappingData(params_data, map)
                 println("自定义参数解密结果->${dcode_params.toString()}")
                 val key = AesUtils.getAesKey(appId, cha)
-                result.append("firebase Key: ${getFirebaseKey(map)}")
+                result.append("\nfirebase Key(老板本走appid): ${getFirebaseKey(map)}")
+                result.append("\nfirebase Key(1043走项目id): ${getFirebaseKey2(app_num)}")
+                result.append("\nAES加密秘钥: ${key}")
                 result.append("\n参数原始结果:\n${dcode_params?.toString()?:"原始结果解析出错,请检查服务器返回和appid是否对应"}")
                 result.append("\n参数映射结果:\n${params_data.toString()}")
                 //拿到aes加密结果
                 val aes_params = AesUtils.encrypt(params_data.toString(), key, key)
                 println("自定义参数AES加密结果结果->${aes_params.toString()}")
-                result.append("\n参数AES加密结果:\n${aes_params.toString()}")
+                result.append("\n参数AES加密结果(双击全选复制):\n${aes_params.toString()}")
                 return result.toString()
             }
         } catch (e: Exception) {
@@ -402,12 +411,29 @@ object ToolsManager {
     }
 
     /**
-     * 获取firebaseKey
+     * 获取firebaseKey,走appid
      * @param map Map<String, String>
      * @return String
      */
     private fun getFirebaseKey(map:Map<String,String>):String{
         return map.get("remote_config")!!
+    }
+
+    /**
+     * 获取firebaseKey2,走项目id
+     * 算法逻辑如下, 取a-z的ASCII码 97-122. 总共26个字符跨度. 由于项目id中数字是0-9, 无法平分26个字符跨度, 所以按一个数字2个ASCII跨度计算
+     * @param map Map<String, String>
+     * @return String
+     */
+    private fun getFirebaseKey2(appId:String):String{
+        val newKey=StringBuilder()
+        appId.toCharArray().forEach {
+            val c=it.toString().toIntOrNull()?:0
+            val asc=c*2+97
+            newKey.append(asc.toChar())
+        }
+        println("1042版本新firebase key:${newKey.toString()}")
+        return newKey.toString()
     }
 
     /**

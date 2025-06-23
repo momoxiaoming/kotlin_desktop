@@ -1,3 +1,4 @@
+import ToolsManager.exportApp
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -25,6 +26,7 @@ import androidx.compose.material.Text
 import androidx.compose.material.TextField
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.DragData
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -127,11 +129,11 @@ fun dexMemPublish(modifier: Modifier) {
 
     var singleId by remember { mutableStateOf("") }
 
-    val data=DexSoManager.getDexVerJson()
+    val data = DexSoManager.getDexVerJson()
     val dex_items = data.list
     val dex_Type = data.sourceType
 
-    val selectedDexVer = remember { mutableStateOf<DexVerData>(dex_items.get(0)) }
+    val selectedDexVer = remember { mutableStateOf<DexSoManager.DexVerData>(dex_items.get(0)) }
     val selectedType = remember { mutableStateOf<String>(dex_Type.get(0)) }
 
     Column(
@@ -220,7 +222,7 @@ fun dexMemPublish(modifier: Modifier) {
             }
             Spacer(modifier = Modifier.width(8.dp))
             Button(onClick = {
-                if (selectedDexVer.value==null) {
+                if (selectedDexVer.value == null) {
                     ret = "没有选择dex版本"
                     showInfoDialog = true
                     return@Button
@@ -236,7 +238,7 @@ fun dexMemPublish(modifier: Modifier) {
                     showInfoDialog = true
                     return@Button
                 }
-                DexSoManager.build(selectedDexVer.value,selectedType.value,singleId)
+                DexSoManager.build(selectedDexVer.value, selectedType.value, singleId)
             }, content = {
                 Text("编译mem版本")
             })
@@ -305,10 +307,27 @@ fun aesEncrypt(modifier: Modifier) {
 //                println(MappingManager.get2("https://www.ipinfo.io"))
 
                 firebaseConfig = ToolsManager.getWbToolParamsData(oriderId)
-                showWindow.value=firebaseConfig.isNotEmpty()
+                showWindow.value = firebaseConfig.isNotEmpty()
 
             }, content = {
-                Text("拉自定义配置")
+                Text("拉旧中台配置")
+            })
+            Spacer(modifier = Modifier.width(8.dp))
+
+            Button(modifier = Modifier.weight(1f), onClick = {
+                if (oriderId.isEmpty()) {
+                    firebaseConfig = "请输入需求单id"
+                    return@Button
+                }
+//                println(MappingManager.post("https://sunny.careduka.com/user-api/blacklist/check",""))
+//
+//                println(MappingManager.get2("https://www.ipinfo.io"))
+
+                firebaseConfig = ToolsManager.getNewToolParamsData(oriderId)
+                showWindow.value = firebaseConfig.isNotEmpty()
+
+            }, content = {
+                Text("拉新中台配置")
             })
             Spacer(modifier = Modifier.width(8.dp))
         }
@@ -453,7 +472,7 @@ fun jarToDexView(modifier: Modifier) {
             val text_modifier = Modifier.weight(1f).border(1.dp, Color.Black).height(50.dp).onExternalDrag(
                 onDrop = { externalDragValue -> //监听鼠标文件拖动事件, 并取出文件path
                     val dragData = externalDragValue.dragData
-                    if (dragData is androidx.compose.ui.DragData.FilesList) {
+                    if (dragData is DragData.FilesList) {
                         val urlPath = dragData.readFiles().map { it.removePrefix("file:/") }.first()
                         jarPath = urlPath
                     }
@@ -498,7 +517,7 @@ fun dumpActivityView(modifier: Modifier) {
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center,
     ) {
-        Text("App Activity栈信息")
+        Text("..App Activity栈信息")
         Spacer(modifier = Modifier.width(8.dp)) // 添加 8dp 的水平间距
         Row(horizontalArrangement = Arrangement.spacedBy(20.dp)) {
             Button(onClick = {
@@ -561,7 +580,7 @@ fun signView(modifier: Modifier) {
         val modifier = Modifier.fillMaxWidth().border(1.dp, Color.Black).onExternalDrag(
             onDrop = { externalDragValue -> //监听鼠标文件拖动事件, 并取出文件path
                 val dragData = externalDragValue.dragData
-                if (dragData is androidx.compose.ui.DragData.FilesList) {
+                if (dragData is DragData.FilesList) {
                     val urlPath = dragData.readFiles().map { it.removePrefix("file:/") }.first()
                     apkPath = urlPath
                 }
@@ -599,18 +618,22 @@ fun signView(modifier: Modifier) {
         }
     }
 }
+
 @Composable
-fun newWindow(showWindow :MutableState<Boolean>,msg:String){
-    Window(onCloseRequest = { showWindow .value=false }, title = "提示") {
+fun newWindow(showWindow: MutableState<Boolean>, msg: String) {
+    Window(onCloseRequest = { showWindow.value = false }, title = "提示") {
         Box(modifier = Modifier.fillMaxWidth().padding(10.dp)) {
             SelectionContainer() {
-                Text(msg, color = Color.Black, fontSize = 10.sp, modifier = Modifier
-                    .fillMaxWidth() // 占满父容器
-                    .verticalScroll(rememberScrollState()))
+                Text(
+                    msg, color = Color.Black, fontSize = 10.sp, modifier = Modifier
+                        .fillMaxWidth() // 占满父容器
+                        .verticalScroll(rememberScrollState())
+                )
             }
         }
     }
 }
+
 @Composable
 fun inputTipsDialog(title: String = "提示", content: String, action: () -> Unit) {
     AlertDialog(onDismissRequest = {
@@ -632,9 +655,11 @@ fun inputTipsDialog(title: String = "提示", content: String, action: () -> Uni
     }, text = {
         Box(modifier = Modifier.width(600.dp)) {
             SelectionContainer() {
-                Text(content, color = Color.Black, fontSize = 10.sp, modifier = Modifier
-                    .fillMaxSize() // 占满父容器
-                    .verticalScroll(rememberScrollState()))
+                Text(
+                    content, color = Color.Black, fontSize = 10.sp, modifier = Modifier
+                        .fillMaxSize() // 占满父容器
+                        .verticalScroll(rememberScrollState())
+                )
             }
         }
 

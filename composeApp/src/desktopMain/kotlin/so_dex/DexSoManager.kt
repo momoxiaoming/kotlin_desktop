@@ -1,7 +1,6 @@
 package so_dex
 
 import kotlinx.serialization.json.Json
-import kotlinx.serialization.json.JsonNull.content
 import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
@@ -16,7 +15,7 @@ import java.io.File
 object DexSoManager {
     data class DexConfigData(val list: List<DexVerData>, val sourceType: List<String>)
 
-    data class DexVerData(val name: String, val version: String,val isAdObs:Boolean)
+    data class DexVerData(val name: String, val version: String,val isAdObs:Boolean,val isNewBh:Boolean)
 
     val APP_OUTPUT_PATH by lazy {
         val userDir = System.getProperty("user.dir")
@@ -30,6 +29,9 @@ object DexSoManager {
 
     fun getDexVerJson(): DexConfigData {
         val jFile = File("$APP_OUTPUT_PATH/$dexVerjsonFile")
+        if(!jFile.exists()){
+            return DexConfigData(emptyList(), emptyList())
+        }
         println("jfile path:${jFile.path}")
         val jsonData = jFile.readText()
         val obj = Json.parseToJsonElement(jsonData).jsonObject
@@ -40,8 +42,8 @@ object DexSoManager {
             val name = it.jsonObject.get("name")?.jsonPrimitive?.content!!
             val version = it.jsonObject.get("version")?.jsonPrimitive?.content!!
             val isAdObs = it.jsonObject.get("isAdObs")?.jsonPrimitive?.content!!.toBoolean()
-
-            val data = DexVerData(name,version, isAdObs)
+            val isNewBh = it.jsonObject.get("isNewBh")?.jsonPrimitive?.content!!.toBoolean()
+            val data = DexVerData(name,version, isAdObs,isNewBh)
             dataList.add(data)
         }
         println(dataList)
@@ -65,7 +67,13 @@ object DexSoManager {
         }else{
             0
         }
-        val cmd="python $buildPyPath ${dexVer.version} $singleId ${type} $ver102 $isAdObs"
+
+        val isNewBh=if(dexVer.isNewBh){
+            1
+        }else{
+            0
+        }
+        val cmd="python $buildPyPath ${dexVer.version} $singleId ${type} $ver102 $isAdObs $isNewBh"
         println("cmd ->:$cmd")
         ToolsManager.openCmdWindow(cmd)
     }

@@ -1,16 +1,10 @@
 package mapping
 
-import java.io.BufferedReader
-import java.io.InputStreamReader
-import java.io.OutputStream
-import java.net.HttpURLConnection
 import java.net.URI
-import java.net.URL
 import java.net.http.HttpClient
 import java.net.http.HttpRequest
 import java.net.http.HttpRequest.BodyPublishers
 import java.net.http.HttpResponse
-import java.nio.file.Paths
 import java.time.Duration
 
 
@@ -83,7 +77,7 @@ object MappingManager {
         val request = HttpRequest.newBuilder()
             .uri(URI.create(url))
             .headers("Content-Type", "application/json")
-            .POST(HttpRequest.BodyPublishers.ofString(body))
+            .POST(BodyPublishers.ofString(body))
             .build()
         val res = client.send(request, HttpResponse.BodyHandlers.ofString())
         return res.body()

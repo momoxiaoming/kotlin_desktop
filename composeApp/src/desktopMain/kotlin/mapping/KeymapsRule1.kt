@@ -50,7 +50,7 @@ object KeymapsRule1 {
         // 4. r2 = 在r1里面取前4个，纯字母的字符（跳过数字和特殊字符）。如果前面跳过了N个非字母的字符，则在取N个纯字母添加在前面的4个字母后面
         // 5. 最终的结果， r = lowercase(r2)
 
-        val k1: ByteString =(key + seedHash).encodeUtf8().md5()
+        val k1: ByteString = (key + seedHash).encodeUtf8().md5()
         val r1 = k1.base64()
 
         val firstN = 4
