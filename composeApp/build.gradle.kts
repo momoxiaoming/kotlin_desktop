@@ -38,8 +38,8 @@ compose.desktop {
         nativeDistributions {
             modules("java.instrument", "java.net.http", "jdk.unsupported")
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
-            packageName = "org.example.project_v3.0"
-            packageVersion = "3.0.0"
+            packageName = "org.example.project_v4.0"
+            packageVersion = "4.0.0"
         }
     }
 }

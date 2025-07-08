@@ -168,7 +168,7 @@ object ToolsManager {
         result.append("\nfirebase Key(老板本走appid): ${getFirebaseKey(map)}")
         result.append("\nfirebase Key(新版本走项目id): ${getFirebaseKey2(pid)}")
         result.append("\nAES加密秘钥: ${key}")
-        result.append("\n解映射结果: \n$mapping_content")
+//        result.append("\n解映射结果: \n$mapping_content")
         result.append("\n加密结果: \n$encode_content")
         return result.toString()
     }
@@ -189,7 +189,7 @@ object ToolsManager {
             val key = AesUtils.getAesKey(appId, cha)
             result.append("\nfirebase Key(老板本走appid): ${getFirebaseKey(map)}")
             result.append("\nfirebase Key(1043走项目id): ${getFirebaseKey2(pid)}")
-            result.append("\n参数原始结果:\n${content}")
+//            result.append("\n参数原始结果:\n${content}")
             //解密
             val decode_content = AesUtils.decrypt(content, key, key)
             result.append("\n参数解密结果:\n${decode_content}")
@@ -197,7 +197,7 @@ object ToolsManager {
             //解映射结果
             val mapping_content = getMappingData(Json.parseToJsonElement(decode_content).jsonObject, map)
             result.append("\n参数解映射结果:\n${mapping_content?:"原始结果解析出错,请检查解密内容是否和需求单对应"}")
-
+            println(result.toString())
             return result.toString()
         } catch (e: Exception) {
             e.printStackTrace()
@@ -231,10 +231,11 @@ object ToolsManager {
     fun getWbAppIdAndCha(orderId: String): ConfigInfo? {
         try {
             val res = get("http://dnsdk.vimedia.cn:8090/v5/FromConfigInfo?singleid=$orderId")
+            println(res)
             val data = Json.parseToJsonElement(res).jsonObject.get("data")!!.jsonObject
             val appId = data.get("appid")?.jsonPrimitive?.content
             val cha = data.get("channelTag")?.jsonPrimitive?.content
-            val app_num = data.get("app_num")?.jsonPrimitive?.content
+            val app_num = data.get("pjId")?.jsonPrimitive?.content
             return ConfigInfo(appId!!, cha!!, app_num!!)
         } catch (e: Exception) {
             return null

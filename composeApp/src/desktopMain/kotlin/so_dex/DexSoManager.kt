@@ -25,12 +25,16 @@ object DexSoManager {
     }
 
     private const val dexVerjsonFile = "dexVer.json"
-    private val buildPyPath = "$APP_OUTPUT_PATH/cd_build.py"
+    private val buildPyPath by lazy {
+        "$APP_OUTPUT_PATH/cd_build.py"
+    }
 
     fun getDexVerJson(): DexConfigData {
         val jFile = File("$APP_OUTPUT_PATH/$dexVerjsonFile")
         if(!jFile.exists()){
-            return DexConfigData(emptyList(), emptyList())
+            val list= listOf<DexVerData>(DexVerData("test","0.0",false,false))
+            val listType= listOf<String>("0")
+            return DexConfigData(list, listType)
         }
         println("jfile path:${jFile.path}")
         val jsonData = jFile.readText()
